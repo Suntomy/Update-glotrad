@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pilgrim Trading — Multi-Asset Terminal</title>
+<meta name="description" content="Pilgrim Trading — automated multi-asset trading terminal, wallet and admin dashboard. Paper-trading simulation environment.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2300d68f'/><text x='50' y='68' font-size='52' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='%23041510'>P</text></svg>">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">PILGRIM TRADING</div>
+        <div class="brand-sub">Davandy Finance Nigeria</div>
+      </div>
+    </div>
+    <div class="login-title">Sign in to your terminal</div>
+    <div class="login-sub">Automated multi-asset trading · MT4/MT5 bridge simulation · segregated interest wallet</div>
+
+    <div class="field">
+      <label class="label">Email</label>
+      <input id="loginEmail" type="email" value="olawale@pilgrim.trade" autocomplete="username">
+    </div>
+    <div class="field">
+      <label class="label">Password</label>
+      <input id="loginPass" type="password" value="admin123" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-block" id="loginBtn" style="margin-top:6px">Enter Terminal</button>
+    <div id="loginErr" class="down" style="font-size:11.5px;margin-top:10px;min-height:15px"></div>
+
+    <div class="demo-box">
+      <b>ADMIN / OWNER</b> — olawale@pilgrim.trade / admin123<br>
+      <b>CLIENT</b> — client@pilgrim.trade / client123<br>
+      <b>MANAGER</b> — manager@pilgrim.trade / manager123
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+
+  <!-- ---------- SIDEBAR ---------- -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">PILGRIM</div>
+        <div class="brand-sub">Trading Terminal</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Trading</div>
+    <div class="nav-item active" data-view="terminal"><span class="ico">◧</span><span>Terminal</span></div>
+    <div class="nav-item" data-view="markets"><span class="ico">▤</span><span>Markets</span></div>
+    <div class="nav-item" data-view="robot"><span class="ico">⚙</span><span>Auto Robot</span><span class="nav-badge" id="robotNavBadge">ON</span></div>
+
+    <div class="nav-label">Finance</div>
+    <div class="nav-item" data-view="wallet"><span class="ico">◈</span><span>Wallet</span></div>
+    <div class="nav-item" data-view="history"><span class="ico">≡</span><span>History</span></div>
+
+    <div class="nav-label">Administration</div>
+    <div class="nav-item" data-view="admin"><span class="ico">⛨</span><span>Admin Console</span></div>
+    <div class="nav-item" data-view="broker"><span class="ico">★</span><span>Broker Listing</span></div>
+
+    <div class="side-foot">
+      <div class="user-chip">
+        <div class="avatar" id="sideAvatar">OA</div>
+        <div style="min-width:0">
+          <div class="user-name" id="sideName">—</div>
+          <div class="user-role" id="sideRole">—</div>
+        </div>
+      </div>
+      <div class="logout" id="logoutBtn">⏻ Sign out</div>
+    </div>
+  </aside>
+
+  <!-- ---------- MAIN ---------- -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Trading Terminal</div>
+        <div class="page-sub" id="pageSub">Live simulated market feed</div>
+      </div>
+      <div class="top-right">
+        <span class="pill"><span class="dot"></span> MT5 Bridge · SIM</span>
+        <span class="pill" id="equityPill">Equity <b class="mono" style="color:#fff">$0.00</b></span>
+        <span class="clock" id="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <!-- ===== TERMINAL ===== -->
+    <section class="view active" id="view-terminal">
+      <div class="sim-banner">⚠ <span><b>Simulation environment.</b> All prices, fills and balances are synthetic paper-trading data. No real funds, no live MetaQuotes connection — safe to explore without financial risk.</span></div>
+
+      <div class="grid g-4" style="margin-bottom:14px">
+        <div class="card stat">
+          <div class="stat-accent" style="background:var(--green)"></div>
+          <div class="stat-label">Main Balance</div>
+          <div class="stat-value" id="statMain">$0.00</div>
+          <div class="stat-foot">Trading capital · withdrawable</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-accent" style="background:var(--gold)"></div>
+          <div class="stat-label">Interest Wallet</div>
+          <div class="stat-value" style="color:var(--gold)" id="statInterest">$0.00</div>
+          <div class="stat-foot">Robot profit · segregated</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-accent" style="background:var(--teal)"></div>
+          <div class="stat-label">Open P/L</div>
+          <div class="stat-value" id="statPnl">$0.00</div>
+          <div class="stat-foot" id="statPosCount">0 open positions</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-accent" style="background:var(--violet)"></div>
+          <div class="stat-label">Equity</div>
+          <div class="stat-value" id="statEquity">$0.00</div>
+          <div class="stat-foot">Main + Interest + Open P/L</div>
+        </div>
+      </div>
+
+      <div class="terminal-grid">
+        <!-- chart + positions -->
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="row" style="gap:9px">
+                  <span class="page-title" id="chartSym">EURUSD</span>
+                  <span class="badge badge-blue" id="chartClass">FOREX</span>
+                </div>
+                <div class="px mono" id="chartPx" style="margin-top:9px">1.00000</div>
+                <div class="px-meta">
+                  <span id="chartChg">+0.00%</span>
+                  <span id="chartHi">H 0.00000</span>
+                  <span id="chartLo">L 0.00000</span>
+                  <span id="chartSpread">Spr 0.0</span>
+                </div>
+              </div>
+              <div class="tf-group" id="tfGroup">
+                <div class="tf active" data-tf="5">5s</div>
+                <div class="tf" data-tf="15">15s</div>
+                <div class="tf" data-tf="60">1m</div>
+              </div>
+            </div>
+            <div class="chart-wrap"><canvas id="chart"></canvas></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Open Positions</div>
+              <span class="badge badge-blue" id="posBadge">0</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Symbol</th><th>Side</th><th>Lots</th><th>Entry</th><th>Current</th><th>P/L</th><th>Source</th><th></th></tr></thead>
+                <tbody id="posBody"><tr><td colspan="8" class="dim" style="padding:22px;text-align:center">No open positions — place a trade or enable the robot.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- order ticket + market watch -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Order Ticket</div><span class="badge badge-green">MARKET</span></div>
+            <div class="card-body">
+              <div class="field">
+                <label class="label">Instrument</label>
+                <select id="orderSym"></select>
+              </div>
+              <div class="grid g-2" style="gap:10px">
+                <div class="field">
+                  <label class="label">Volume (lots)</label>
+                  <input id="orderLots" type="number" value="0.10" min="0.01" step="0.01">
+                </div>
+                <div class="field">
+                  <label class="label">Leverage</label>
+                  <select id="orderLev">
+                    <option>1:100</option><option selected>1:200</option><option>1:500</option><option>1:1000</option>
+                  </select>
+                </div>
+              </div>
+              <div class="between" style="font-size:11.5px;color:var(--text-3);margin:2px 0 12px">
+                <span>Required margin</span><span class="mono" id="orderMargin">$0.00</span>
+              </div>
+              <div class="grid g-2" style="gap:10px">
+                <button class="btn btn-buy" id="btnBuy">▲ BUY</button>
+                <button class="btn btn-sell" id="btnSell">▼ SELL</button>
+              </div>
+              <div class="row" style="margin-top:11px;gap:7px;font-size:10.5px;color:var(--text-3);justify-content:center">
+                <span>Bid <b class="mono down" id="ticketBid">—</b></span>
+                <span>·</span>
+                <span>Ask <b class="mono up" id="ticketAsk">—</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div class="card-title">Market Watch</div><span class="dim" style="font-size:10px">LIVE</span></div>
+            <div id="marketWatch" style="max-height:330px;overflow-y:auto"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MARKETS ===== -->
+    <section class="view" id="view-markets">
+      <div class="sim-banner">⚠ <span>Synthetic price feed. Instruments span FX, metals, crypto, indices and equities.</span></div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">All Instruments</div><span class="dim" style="font-size:11px" id="mkCount">—</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Symbol</th><th>Class</th><th>Bid</th><th>Ask</th><th>Spread</th><th>Change</th><th>Session High</th><th>Session Low</th><th></th></tr></thead>
+            <tbody id="marketsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ROBOT ===== -->
+    <section class="view" id="view-robot">
+      <div class="sim-banner">⚠ <span>Robot engine runs on a <b>7-second cycle</b>. It follows momentum in either direction, banks profit into the segregated <b>Interest Wallet</b>, and never touches main trading capital.</span></div>
+
+      <div class="grid g-2" style="margin-bottom:14px">
+        <div class="robot-hero">
+          <div class="between">
+            <div class="row" style="gap:15px">
+              <div class="ring">
+                <svg width="74" height="74"><circle cx="37" cy="37" r="31" fill="none" stroke="#1e2d47" stroke-width="6"/><circle id="ringArc" cx="37" cy="37" r="31" fill="none" stroke="#00d68f" stroke-width="6" stroke-linecap="round" stroke-dasharray="195" stroke-dashoffset="0"/></svg>
+                <div class="ring-num" id="ringNum">7</div>
+              </div>
+              <div>
+                <div class="card-title" style="color:var(--green)">Pilgrim Auto-Robot</div>
+                <div style="font-size:19px;font-weight:750;margin-top:5px" id="robotState">RUNNING</div>
+                <div class="dim" style="font-size:11.5px;margin-top:4px">Next cycle in <b id="robotCountdown">7</b>s · momentum + mean-reversion</div>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" id="robotToggle">Pause Robot</button>
+          </div>
+          <div class="grid g-3" style="margin-top:18px;gap:10px">
+            <div><div class="stat-label">Robot Trades</div><div class="mono" style="font-size:18px;font-weight:700;margin-top:4px" id="rTrades">0</div></div>
+            <div><div class="stat-label">Win Rate</div><div class="mono up" style="font-size:18px;font-weight:700;margin-top:4px" id="rWin">—</div></div>
+            <div><div class="stat-label">Interest Earned</div><div class="mono" style="font-size:18px;font-weight:700;margin-top:4px;color:var(--gold)" id="rProfit">$0.00</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Robot Configuration</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label class="label">Cycle Interval (seconds)</label>
+              <input id="cfgCycle" type="number" value="7" min="7" max="60">
+            </div>
+            <div class="field">
+              <label class="label">Lots per Robot Trade</label>
+              <input id="cfgLots" type="number" value="0.50" min="0.01" step="0.01">
+            </div>
+            <div class="field">
+              <label class="label">Take-Profit Distance (%)</label>
+              <input id="cfgTp" type="number" value="0.08" min="0.01" step="0.01">
+            </div>
+            <div class="field">
+              <label class="label">Assets in Rotation</label>
+              <select id="cfgScope">
+                <option value="all" selected>All asset classes</option>
+                <option value="fx">FX only</option>
+                <option value="crypto">Crypto only</option>
+                <option value="metals">Metals only</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-block" id="cfgSave">Apply Configuration</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Robot Activity Log</div><span class="dim" style="font-size:10.5px" id="logCount">0 events</span></div>
+        <div class="log" id="robotLog"><div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg">Engine initialising…</span></div></div>
+      </div>
+    </section>
+
+    <!-- ===== WALLET ===== -->
+    <section class="view" id="view-wallet">
+      <div class="sim-banner">⚠ <span>Segregated ledger: trading capital and robot interest are held in separate balances. Transfers and payouts are simulated.</span></div>
+
+      <div class="grid g-3" style="margin-bottom:14px">
+        <div class="wallet-card wallet-main">
+          <div class="stat-label" style="color:#7fe8c0">Main Trading Balance</div>
+          <div class="wallet-amt" id="wMain">$0.00</div>
+          <div class="dim" style="font-size:11.5px">Capital used for margin. Withdrawable to bank or crypto.</div>
+        </div>
+        <div class="wallet-card wallet-int">
+          <div class="stat-label" style="color:#e8c98a">Interest Wallet · Micro</div>
+          <div class="wallet-amt" style="color:var(--gold)" id="wInt">$0.00</div>
+          <div class="dim" style="font-size:11.5px">80% of robot yield. Transfer to main to compound.</div>
+        </div>
+        <div class="wallet-card" style="background:linear-gradient(135deg,#1a1430,#0d1a2a);border:1px solid rgba(139,92,246,.35)">
+          <div class="stat-label" style="color:#a78bfa">Macro Wallet · Auto-Sweep</div>
+          <div class="wallet-amt" style="color:#a78bfa" id="wMacro">$0.00</div>
+          <div class="dim" style="font-size:11.5px">20% of robot yield swept automatically for long-term capital.</div>
+        </div>
+      </div>
+
+      <div class="grid g-3">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Transfer Between Wallets</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label class="label">Direction</label>
+              <select id="trDir">
+                <option value="int2main">Interest → Main</option>
+                <option value="main2int">Main → Interest</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Amount (USD)</label>
+              <input id="trAmt" type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <button class="btn btn-primary btn-block" id="trBtn">Transfer</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Withdraw to Bank</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label class="label">Source</label>
+              <select id="bkSrc"><option value="main">Main Balance</option><option value="interest">Interest Wallet</option></select>
+            </div>
+            <div class="field">
+              <label class="label">Amount (USD)</label>
+              <input id="bkAmt" type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field">
+              <label class="label">Bank / Account</label>
+              <select id="bkBank">
+                <option>Davandy Finance Nigeria — GTBank ****4412</option>
+                <option>Davandy Finance Nigeria — Access ****8890</option>
+                <option>Zenith Bank — ****2201</option>
+              </select>
+            </div>
+            <button class="btn btn-block" id="bkBtn">Request Bank Payout</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Withdraw to Crypto</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label class="label">Source</label>
+              <select id="crSrc"><option value="main">Main Balance</option><option value="interest">Interest Wallet</option></select>
+            </div>
+            <div class="field">
+              <label class="label">Amount (USD)</label>
+              <input id="crAmt" type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field">
+              <label class="label">Network</label>
+              <select id="crNet">
+                <option>Bitcoin (BTC) · Native</option>
+                <option>Ethereum (ETH) · ERC-20</option>
+                <option>USDT · TRC-20</option>
+                <option>USDT · ERC-20</option>
+                <option>USDC · Polygon</option>
+                <option>BNB · BEP-20</option>
+                <option>Solana (SOL)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Wallet Address</label>
+              <input id="crAddr" placeholder="Paste destination address">
+            </div>
+            <button class="btn btn-block" id="crBtn">Request Crypto Payout</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HISTORY ===== -->
+    <section class="view" id="view-history">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Account Ledger</div><span class="dim" style="font-size:11px" id="histCount">0 entries</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Type</th><th>Detail</th><th>Amount</th><th>Wallet</th><th>Status</th></tr></thead>
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ADMIN ===== -->
+    <section class="view" id="view-admin">
+      <div class="sim-banner">⚠ <span>Admin actions are role-gated in the UI <b>and</b> re-checked in the API layer of the reference backend. This demo enforces RBAC client-side.</span></div>
+
+      <div class="grid g-4" style="margin-bottom:14px">
+        <div class="card stat"><div class="stat-label">Total Clients</div><div class="stat-value" id="admUsers">0</div><div class="stat-foot">Registered accounts</div></div>
+        <div class="card stat"><div class="stat-label">Client Capital</div><div class="stat-value" id="admCapital">$0.00</div><div class="stat-foot">Sum of main balances</div></div>
+        <div class="card stat"><div class="stat-label">Interest Paid</div><div class="stat-value" style="color:var(--gold)" id="admInterest">$0.00</div><div class="stat-foot">Robot distributions</div></div>
+        <div class="card stat"><div class="stat-label">Open Positions</div><div class="stat-value" id="admPos">0</div><div class="stat-foot">Platform-wide</div></div>
+      </div>
+
+      <div class="grid g-2" style="margin-bottom:14px;grid-template-columns:1fr 380px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Client Accounts</div><span class="badge badge-gold">RBAC · ADMIN</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Client</th><th>Role</th><th>Main</th><th>Interest</th><th>Positions</th><th></th></tr></thead>
+              <tbody id="adminUsersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Credit / Debit Client</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label class="label">Client</label>
+              <select id="credUser"></select>
+            </div>
+            <div class="field">
+              <label class="label">Action</label>
+              <select id="credAction"><option value="credit">Credit (+)</option><option value="debit">Debit (−)</option></select>
+            </div>
+            <div class="field">
+              <label class="label">Wallet</label>
+              <select id="credWallet"><option value="main">Main Balance</option><option value="interest">Interest Wallet</option></select>
+            </div>
+            <div class="field">
+              <label class="label">Amount (USD)</label>
+              <input id="credAmt" type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field">
+              <label class="label">Reference / Note</label>
+              <input id="credNote" placeholder="e.g. Wire deposit ref #4412">
+            </div>
+            <button class="btn btn-primary btn-block" id="credBtn">Apply Balance Change</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Admin Audit Trail</div><span class="dim" style="font-size:10.5px" id="auditCount">0 events</span></div>
+        <div class="log" id="auditLog" style="max-height:250px"></div>
+      </div>
+    </section>
+
+    <!-- ===== BROKER ===== -->
+    <section class="view" id="view-broker">
+      <div class="broker-hero">
+        <div class="row" style="gap:16px;flex-wrap:wrap">
+          <div class="crest">★</div>
+          <div style="flex:1;min-width:220px">
+            <div class="row" style="gap:9px;flex-wrap:wrap">
+              <div class="page-title" style="font-size:19px">Pilgrim Trading</div>
+              <span class="badge badge-gold">LISTED BROKER</span>
+              <span class="badge badge-blue">MULTI-ASSET</span>
+            </div>
+            <div class="dim" style="font-size:12px;margin-top:6px">A division of Davandy Finance Nigeria · Lagos, Nigeria</div>
+          </div>
+          <div style="text-align:right">
+            <div class="stat-label">Platform Status</div>
+            <div class="row" style="gap:7px;justify-content:flex-end;margin-top:5px"><span class="dot"></span><b style="color:var(--green);font-size:13px">OPERATIONAL</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-2" style="margin-top:14px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Entity Details</div></div>
+          <div class="card-body">
+            <div class="kv"><span>Registered Name</span><span>Davandy Finance Nigeria</span></div>
+            <div class="kv"><span>Trading Brand</span><span>Pilgrim Trading</span></div>
+            <div class="kv"><span>Owner / Principal</span><span>Olawale Abdul-Ganiyu Adeshina</span></div>
+            <div class="kv"><span>Jurisdiction</span><span>Nigeria</span></div>
+            <div class="kv"><span>Broker List Category</span><span>Forex · Crypto · Metals · Equities</span></div>
+            <div class="kv"><span>Terminal Bridge</span><span>MT4 / MT5 (simulated)</span></div>
+            <div class="kv"><span>Regulatory Status</span><span style="color:var(--gold)">Licence application pending</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Platform Capabilities</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:9px">
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Automated 7-second profit robot</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Segregated interest wallet</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Crypto-to-fiat payouts</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Admin credit / debit controls</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Live candlestick terminal</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-green">✓</span><span style="font-size:12.5px">Multi-asset order routing</span></div>
+            <div class="row" style="gap:9px"><span class="badge badge-gold">!</span><span style="font-size:12.5px;color:var(--text-2)">Real-money operation requires licensing + MetaQuotes agreement</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head"><div class="card-title" id="modalTitle">Confirm</div><span class="x" id="modalX">×</span></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="modalCancel">Cancel</button><button class="btn btn-primary" id="modalOk">Confirm</button></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
